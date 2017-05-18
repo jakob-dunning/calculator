@@ -1,6 +1,9 @@
 <?php
-    require_once 'php/libs/Markdown/markdown.php';
-    $display = "0";
+  // Start the session
+  session_start();
+  require_once 'php/libs/Markdown/markdown.php';
+  $display = (isset($_SESSION['displayIntermediate'])) ? $_SESSION['displayIntermediate'] : "0";
+  print_r($_SESSION);
 ?>
 <!DOCTYPE html>
 <html>
@@ -23,12 +26,11 @@
 
       <h1>3pc Taschenrechner</h1>
 
-      <form action="" method="post">
-
+      <form action="php/calc.php" method="post">
         <table class="calculator">
           <tr>
             <td colspan="5">
-              <input class="form-control" type="text" name="anzeige" value="<?= $display ?>" />
+              <input class="form-control" type="text" name="anzeige" value="<?php echo $display ?>" />
             </td>
           </tr>
           <tr>
