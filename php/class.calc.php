@@ -46,8 +46,11 @@ class calculator {
         $display = '0';
       break;
       case 'load':
+        $display = $_SESSION['resultStorage'];
       break;
       case 'save':
+        $_SESSION['resultStorage'] = $display;
+        $_SESSION['clearResultOnLoad'] = true;
       break;
       case ',':
         // check if there's a comma within the last number and whether the last char is an operator
