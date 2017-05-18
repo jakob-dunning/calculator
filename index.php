@@ -1,4 +1,5 @@
 <?php
+  session_start(); 
   require_once 'php/libs/Markdown/markdown.php';
   $display = (isset($_GET['display'])) ? $_GET['display'] : "0";
 

@@ -1,8 +1,8 @@
 <?php
   namespace jakobDunning\calculator;
 
-  // debug mode
-  ini_set('display_errors', '1');
+  // session options
+  session_start();
 
   require 'class.calc.php';
 

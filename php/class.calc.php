@@ -14,6 +14,9 @@ class calculator {
     // evaluate input by numbers, special buttons, etc.
     $display = $this->evaluateInput($display, $input, $operatorsRegex);
     
+    // aesthetics matter...
+    $display = preg_replace('/\./', ',', $display);
+    
     // return output to be displayed
     $query = '?display=' . urlencode($display);
     header('Location:../index.php' . $query);
@@ -31,6 +34,13 @@ class calculator {
   }
   
   function evaluateInput($display, $input, $operatorsRegex) {
+    
+    if($_SESSION['clearResultOnLoad']) {
+      // clearing the display after hitting the "result" button if next input is number
+      $_SESSION['clearResultOnLoad'] = false;
+      if(is_numeric($input)) $display = 0;
+    }
+    
     switch($input) {
       case 'C':
         $display = '0';
@@ -46,6 +56,7 @@ class calculator {
       break;
       case '=':
         $display = $this->getResult($display, $operatorsRegex);
+        $_SESSION['clearResultOnLoad'] = true;
       break;
       default:
         // if a second operator is added, get intermediate result
@@ -84,9 +95,6 @@ class calculator {
         $display = $factors[0] + $factors[2];
       break;
     }
-    
-    // aesthetics matter...
-    $display = preg_replace('/\./', ',', $display);
     
     return $display;
   }
