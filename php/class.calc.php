@@ -62,10 +62,12 @@ class calculator {
         $_SESSION['clearResultOnLoad'] = true;
       break;
       default:
+      
+        // if any operator is pushed after pushing another operator, do nothing
+        if(preg_match($operatorsRegex, $input) && preg_match($operatorsRegex, substr($display, -1))) break;
+        
         // if a second operator is added, get intermediate result
-        if(preg_match_all($operatorsRegex, $display) && preg_match($operatorsRegex, $input)) {
-          $display = $this->getResult($display, $operatorsRegex);
-        }
+        if(preg_match_all($operatorsRegex, $display) && preg_match($operatorsRegex, $input)) $display = $this->getResult($display, $operatorsRegex);
         
         // if display is 0, erase before adding new input
         $display = ($display == 0) ? $input : $display.$input;
