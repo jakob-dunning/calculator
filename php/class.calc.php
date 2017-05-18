@@ -4,22 +4,19 @@ namespace jakobDunning\calculator;
 class calculator {
   
   function updateDisplay() {
-    $display = $_SESSION['display'];
+    $display = $_POST['anzeige'];
     $input = $_POST['button'];
-    global $debug;
-    //$debug = '';
+    $operatorsRegex = '/([\+\-\/\*])/';
     
     // translate constants to numbers (pi, etc.)
     $input = $this->translateConstants($input);
     
     // evaluate input by numbers, special buttons, etc.
-    $_SESSION['display'] = $this->evaluateInput($display, $input);
-    
-    // get intermediate results to be displayed
-    $_SESSION['displayIntermediate'] = $this->getIntermediateResults($_SESSION['display']);
+    $display = $this->evaluateInput($display, $input, $operatorsRegex);
     
     // return output to be displayed
-    header('Location:../index.php');
+    $query = '?display=' . urlencode($display);
+    header('Location:../index.php' . $query);
   }
   
   function translateConstants($input) {
@@ -33,7 +30,7 @@ class calculator {
     return $input;
   }
   
-  function evaluateInput($display, $input) {
+  function evaluateInput($display, $input, $operatorsRegex) {
     switch($input) {
       case 'C':
         $display = '0';
@@ -48,11 +45,13 @@ class calculator {
         if(!$offset || (!is_numeric(substr($display, $offset+1)) && is_numeric(substr($display, -1)))) $display .= ',';
       break;
       case '=':
-        $display = $this->getResult($display);
+        $display = $this->getResult($display, $operatorsRegex);
       break;
       default:
-        // no 2 operators after each other, only numbers
-        if(!is_numeric(substr($display, -1)) && !is_numeric($input)) break;
+        // if a second operator is added, get intermediate result
+        if(preg_match_all($operatorsRegex, $display) && preg_match($operatorsRegex, $input)) {
+          $display = $this->getResult($display, $operatorsRegex);
+        }
         
         // if display is 0, erase before adding new input
         $display = ($display == 0) ? $input : $display.$input;
@@ -61,24 +60,34 @@ class calculator {
     return $display;
   }
   
-  function getIntermediateResults($display) {
-    // get all multiplications
-    $displayIntermediate = preg_replace_callback('/\d+\*\d+(?!\(\d+\))/', function($matches) {
-      $matchesUpdated = [];
-      /*
-      foreach($matches as $match) { 
-        $factors = explode('*', $match);
-        $matchesUpdated[] = $match . '(' . ($factors[0] * $factors[1]) . ')';
-      }
-      */
-      $factors = explode('*', $matches[0]);
-      $match = $matches[0] . '(' . ($factors[0] * $factors[1]) . ') ';
-      return $match;
-    }, $display);
-    return ($displayIntermediate) ? $displayIntermediate : $display;
-  }
   
-  function getResult($display) {
-    return 666;
+  function getResult($display, $operatorsRegex) {
+    
+    // replace commas with dots to facilitate calculation
+    $display = preg_replace('/,/', '.', $display); 
+    
+    $factors = preg_split($operatorsRegex,  $display, -1,  PREG_SPLIT_DELIM_CAPTURE);
+    switch($factors[1]) {
+      case '*':
+        $display = $factors[0] * $factors[2];
+      break;
+      case '/':
+        $display = $factors[0] / $factors[2];
+      break;
+      case '%':
+        $display = $factors[0] % $factors[2];
+      break;
+      case '-':
+        $display = $factors[0] - $factors[2];
+      break;
+      case '+':
+        $display = $factors[0] + $factors[2];
+      break;
+    }
+    
+    // aesthetics matter...
+    $display = preg_replace('/\./', ',', $display);
+    
+    return $display;
   }
 }

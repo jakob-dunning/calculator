@@ -1,9 +1,7 @@
 <?php
-  // Start the session
-  session_start();
   require_once 'php/libs/Markdown/markdown.php';
-  $display = (isset($_SESSION['displayIntermediate'])) ? $_SESSION['displayIntermediate'] : "0";
-  print_r($_SESSION);
+  $display = (isset($_GET['display'])) ? $_GET['display'] : "0";
+
 ?>
 <!DOCTYPE html>
 <html>
