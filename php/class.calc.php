@@ -17,7 +17,7 @@ class calculator {
     // aesthetics matter...
     $display = preg_replace('/\./', ',', $display);
     
-    // return output to be displayed
+    // return output to be displayed (Could've used the session for storing infos, but keeping the BACK button funtionality is kind of nice)
     $query = '?display=' . urlencode($display);
     header('Location:../index.php' . $query);
   }
