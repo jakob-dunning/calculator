@@ -12,7 +12,7 @@ class calculator {
     $this->input = $input;
   }
   
-  function updateDisplay() {
+  public function updateDisplay() {
     
     // translate constants to numbers (pi, etc.)
     $this->translateConstants();
@@ -28,7 +28,7 @@ class calculator {
     header('Location:../index.php' . $query);
   }
   
-  function translateConstants() {
+  private function translateConstants() {
     
     if(!is_numeric($this->input)) {
       switch($this->input) {
@@ -36,10 +36,11 @@ class calculator {
           $this->input = pi();
         break;
       }
+      $_SESSION['clearResultOnLoad'] = true;
     }
   }
   
-  function evaluateInput() {
+  private function evaluateInput() {
     
     if($_SESSION['clearResultOnLoad']) {
       // clearing the display after hitting the "result" button if next input is number
@@ -81,7 +82,7 @@ class calculator {
   }
   
   
-  function getResult() {
+  private function getResult() {
     
     // replace commas with dots to facilitate calculation
     $this->display = preg_replace('/,/', '.', $this->display); 
