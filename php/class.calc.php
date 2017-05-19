@@ -3,104 +3,106 @@ namespace jakobDunning\calculator;
 
 class calculator {
   
+  private $operatorsRegex = '/([\+\-\/\*])/';
+  private $display;
+  private $input;
+  
+  function __construct($display, $input) {
+    $this->display = $display;
+    $this->input = $input;
+  }
+  
   function updateDisplay() {
-    $display = $_POST['anzeige'];
-    $input = $_POST['button'];
-    $operatorsRegex = '/([\+\-\/\*])/';
     
     // translate constants to numbers (pi, etc.)
-    $input = $this->translateConstants($input);
+    $this->translateConstants();
     
     // evaluate input by numbers, special buttons, etc.
-    $display = $this->evaluateInput($display, $input, $operatorsRegex);
+    $this->evaluateInput();
     
     // aesthetics matter...
-    $display = preg_replace('/\./', ',', $display);
+    $this->display = preg_replace('/\./', ',', $this->display);
     
     // return output to be displayed (Could've used the session for storing infos, but keeping the BACK button funtionality is kind of nice)
-    $query = '?display=' . urlencode($display);
+    $query = '?display=' . urlencode($this->display);
     header('Location:../index.php' . $query);
   }
   
-  function translateConstants($input) {
-    if(!is_numeric($input)) {
-      switch($input) {
+  function translateConstants() {
+    
+    if(!is_numeric($this->input)) {
+      switch($this->input) {
         case 'pi':
-          $input = pi();
+          $this->input = pi();
         break;
       }
     }
-    return $input;
   }
   
-  function evaluateInput($display, $input, $operatorsRegex) {
+  function evaluateInput() {
     
     if($_SESSION['clearResultOnLoad']) {
       // clearing the display after hitting the "result" button if next input is number
       $_SESSION['clearResultOnLoad'] = false;
-      if(is_numeric($input)) $display = 0;
+      if(is_numeric($this->input)) $this->display = 0;
     }
     
-    switch($input) {
+    switch($this->input) {
       case 'C':
-        $display = '0';
+        $this->display = '0';
       break;
       case 'load':
-        $display = $_SESSION['resultStorage'];
+        $this->display = (isset($_SESSION['resultStorage'])) ? $_SESSION['resultStorage'] : $this->display;
       break;
       case 'save':
-        $_SESSION['resultStorage'] = $display;
+        $_SESSION['resultStorage'] = $this->display;
         $_SESSION['clearResultOnLoad'] = true;
       break;
       case ',':
         // check if there's a comma within the last number and whether the last char is an operator
-        $offset = strrpos($display, ',');
-        if(!$offset || (!is_numeric(substr($display, $offset+1)) && is_numeric(substr($display, -1)))) $display .= ',';
+        $offset = strrpos($this->display, ',');
+        if(!$offset || (!is_numeric(substr($this->display, $offset+1)) && is_numeric(substr($this->display, -1)))) $this->display .= ',';
       break;
       case '=':
-        $display = $this->getResult($display, $operatorsRegex);
+        $this->getResult();
         $_SESSION['clearResultOnLoad'] = true;
       break;
       default:
-      
         // if any operator is pushed after pushing another operator, do nothing
-        if(preg_match($operatorsRegex, $input) && preg_match($operatorsRegex, substr($display, -1))) break;
+        if(preg_match($this->operatorsRegex, $this->input) && preg_match($this->operatorsRegex, substr($this->display, -1))) break;
         
         // if a second operator is added, get intermediate result
-        if(preg_match_all($operatorsRegex, $display) && preg_match($operatorsRegex, $input)) $display = $this->getResult($display, $operatorsRegex);
+        if(preg_match_all($this->operatorsRegex, $this->display) && preg_match($this->operatorsRegex, $this->input)) $this->getResult();
         
         // if display is 0, erase before adding new input
-        $display = ($display == 0) ? $input : $display.$input;
+        $this->display = ($this->display == 0) ? $this->input : $this->display.$this->input;
       break;
     }
-    return $display;
   }
   
   
-  function getResult($display, $operatorsRegex) {
+  function getResult() {
     
     // replace commas with dots to facilitate calculation
-    $display = preg_replace('/,/', '.', $display); 
-    
-    $factors = preg_split($operatorsRegex,  $display, -1,  PREG_SPLIT_DELIM_CAPTURE);
+    $this->display = preg_replace('/,/', '.', $this->display); 
+    $factors = preg_split($this->operatorsRegex,  $this->display, -1,  PREG_SPLIT_DELIM_CAPTURE);
     switch($factors[1]) {
       case '*':
-        $display = $factors[0] * $factors[2];
+        $this->display = $factors[0] * $factors[2];
       break;
       case '/':
-        $display = $factors[0] / $factors[2];
+        $this->display = $factors[0] / $factors[2];
       break;
       case '%':
-        $display = $factors[0] % $factors[2];
+        $this->display = $factors[0] % $factors[2];
       break;
       case '-':
-        $display = $factors[0] - $factors[2];
+        $this->display = $factors[0] - $factors[2];
       break;
       case '+':
-        $display = $factors[0] + $factors[2];
+        $this->display = $factors[0] + $factors[2];
       break;
     }
-    
-    return $display;
   }
+  
 }
