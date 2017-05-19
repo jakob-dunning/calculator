@@ -69,14 +69,19 @@ class calculator {
         $_SESSION['clearResultOnLoad'] = true;
       break;
       default:
+        
+        // if trying to use operator without numbers, do nothing
+        if(preg_match($this->operatorsRegex, $this->input) && preg_match('/0(?!,)/', $this->display)) break;
+
         // if any operator is pushed after pushing another operator, do nothing
         if(preg_match($this->operatorsRegex, $this->input) && preg_match($this->operatorsRegex, substr($this->display, -1))) break;
-        
+
         // if a second operator is added, get intermediate result
         if(preg_match_all($this->operatorsRegex, $this->display) && preg_match($this->operatorsRegex, $this->input)) $this->getResult();
-        
+
         // if display is 0, erase before adding new input
-        $this->display = ($this->display == 0) ? $this->input : $this->display.$this->input;
+        $this->display = (preg_match('/0(?!,)/', $this->display)) ? $this->input : $this->display.$this->input;
+        
       break;
     }
   }
